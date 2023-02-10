@@ -69,6 +69,10 @@ namespace Dagny_Taggart_Job
 			{
 				return _trainCarSmall;
 			}
+			set
+			{
+				_trainCarSmall = value;
+			}
 		}
 
 		public void MakeTrain(List<Passenger> passengers)
