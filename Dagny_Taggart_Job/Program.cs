@@ -77,13 +77,19 @@ namespace Dagny_Taggart_Job
 
 		public void MakeTrain(List<Passenger> passengers)
 		{
-
 			int numberOfSmallTrainCars = 0;
 			int numberOfLargeTrainCars = 0;
 			int actualPassengerNumber = 0;
 
-			numberOfLargeTrainCars = passengers.Count/TrainCarLarge.Length;
-
+			if(passengers.Count < 9)
+			{
+				numberOfLargeTrainCars = 0;
+			}
+			else
+			{
+				numberOfLargeTrainCars = passengers.Count/TrainCarLarge.Length;
+			}
+			
 			for(int i = 0; i < numberOfLargeTrainCars; i++)
 			{
 				for(int j = 0; j < _trainCarLarge.Length; j++)
@@ -91,10 +97,11 @@ namespace Dagny_Taggart_Job
 					_trainCarLarge[i] = passengers[i];
 					actualPassengerNumber++;
 				}
+
 				_train.Add(_trainCarLarge);
 			}
 
-			if (passengers.Count%TrainCarLarge.Length>8)
+			if (passengers.Count%TrainCarLarge.Length>8) //зачем два маленьких вагона, выгоднее ли это чем один большой?
 			{
 				numberOfSmallTrainCars = 2;
 			}
@@ -110,16 +117,23 @@ namespace Dagny_Taggart_Job
 				}
 			}
 
+			int passengersInLastCarTrain = passengers.Count - numberOfLargeTrainCars*TrainCarLarge.Length;
+
 			for (int i = 0; i < numberOfSmallTrainCars; i++)
 			{
-				for (int j = 0; j < _trainCarSmall.Length; j++)
+				for (int j = 0; j < passengersInLastCarTrain;)
 				{
 					_trainCarSmall[i] = passengers[i];
 					actualPassengerNumber++;
+					passengersInLastCarTrain--;
 				}
+
 				_train.Add(_trainCarSmall);
 			}
-			
+
+			Console.WriteLine("Пассажиры в поезде:");
+			Console.WriteLine(actualPassengerNumber); 
+			Console.WriteLine($"поездов в составе {_train.Count}");
 		}
 
 		public void Show()
@@ -128,6 +142,7 @@ namespace Dagny_Taggart_Job
 			{
 				Console.WriteLine(carTrain);
 			}
+
 			Console.WriteLine(_train.Count);
 		}
 	}
@@ -157,6 +172,7 @@ namespace Dagny_Taggart_Job
 					{
 						destinationCity = cities[randomCityNumber];
 						isAnotherCity = true;
+
 						break;
 					}
 				}
@@ -175,7 +191,7 @@ namespace Dagny_Taggart_Job
 			List<Passenger> passengers = new List<Passenger>();
 
 			Passenger passenger = new Passenger(); 
-			int passengersAmount = random.Next(33, 50);
+			int passengersAmount = random.Next(9, 10);
 
 			for(int i = 0; i < passengersAmount; i++)
 			{
