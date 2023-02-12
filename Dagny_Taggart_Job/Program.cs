@@ -15,38 +15,143 @@ namespace Dagny_Taggart_Job
 	{
 		static void Main(string[] args)
 		{
-			FormationPlan plan = new FormationPlan();
-			Traffic traffic = new Traffic();
-			Train train = new Train();
+			const string CreateDestination = "1";
+			const string SellTickets = "2";
+			const string MakeTrain = "3";
+			const string CommandTrainToDepart = "4";
+			const string CommandExit = "exit";
 
-			plan.Create();
-			List<Passenger> passengers = traffic.PassengerFlow();
-			Console.WriteLine(passengers.Count);
+			Console.WriteLine("Enter для продолжения");
 
-			train.MakeTrain(passengers);
+			while (Console.ReadKey().Key != ConsoleKey.Spacebar)
+			{
+				bool isCommandExit = false;
+				bool isPlanCreated = false;
+				bool isTrainCreated = false;
+				bool isTrafficCreated = false;
+				string destinationPoints = "";
 
-			train.Show();
+				FormationPlan plan = new FormationPlan();
+				Traffic traffic = new Traffic();
+				Train train = new Train();
+				List<Passenger> passengers = new List<Passenger>();
 
+				Console.WriteLine("Если хотите закончить нажмите пробел");
+
+				while (isCommandExit==false)
+				{
+					Console.WriteLine(
+						$"{CreateDestination} - добавить направление\n" +
+						$"{SellTickets} - продать билеты\n" +
+						$"{MakeTrain} - сформировать состав\n" +
+						$"{CommandTrainToDepart} - отправить поезд\n" +
+						$"Введите номер команды и нажмите Enter" +
+						$"\n выход - exit"
+						);
+					if (isPlanCreated)
+					{
+						Console.WriteLine($"Направление: {destinationPoints}, " +
+							$"билетов продано:{passengers.Count}");
+					}
+
+					string command = Console.ReadLine();
+
+					switch (command)
+					{
+						case CreateDestination:
+
+							if(isPlanCreated == false)
+							{
+								destinationPoints = plan.Create();
+								isPlanCreated = true;
+							}
+							else
+							{
+								Console.WriteLine("Закончите формировать уже созданное направление");
+							}
+
+							break;
+
+						case SellTickets:
+
+							if (isTrafficCreated == false & isPlanCreated == true)
+							{
+								passengers = traffic.PassengerFlow(destinationPoints);
+								Console.WriteLine($"Продано {passengers.Count} билетов");
+								isTrafficCreated = true;
+							}
+							else
+							{
+								Console.WriteLine("Закончите формировать уже созданное направление");
+							}
+							
+							break;
+
+						case MakeTrain:
+
+							if(isTrainCreated == false & isPlanCreated == true & isTrafficCreated ==true)
+							{
+								train.Make(passengers);
+								isTrainCreated = true;
+							}
+							else
+							{
+								Console.WriteLine("Закончите формировать уже созданное направление");
+							}
+
+							break;
+
+						case CommandTrainToDepart:
+
+							if (isTrainCreated&isTrafficCreated&isPlanCreated)
+							{
+								Console.WriteLine("Поезд отправляется ЧУ-ЧУУУУ");
+								isCommandExit = true;
+							}
+							else
+							{
+								Console.WriteLine("Перед отправкой поезда, закончите формировать направление");
+							}
+
+							break;
+
+						case CommandExit:
+							isCommandExit = true;
+							break;
+
+						default:
+							Console.WriteLine("Ошибка ввода команды");
+							break;
+					}
+
+					Console.WriteLine("Нажмите любую кнопку для продолжения");
+					Console.ReadKey();
+					Console.Clear();
+				}
+			}
 		}
 	}
 
 	class Passenger
 	{
-		private int TrainCar;
-		private int DestinationTrain;
+		private string _destinationTrain;
 
-		public Passenger(int trainCar, int destinationTrain)
+		public Passenger(string destitationPoints)
 		{
-			TrainCar=trainCar;
-			DestinationTrain=destinationTrain;
+			_destinationTrain = destitationPoints;
 		}
 
-		public Passenger()
+		public string DestinationTrain
 		{
-
+			get
+			{
+				return _destinationTrain;
+			}
+			set
+			{
+				_destinationTrain = value;
+			}
 		}
-			
-	
 	}
 
 	class Train
@@ -61,6 +166,10 @@ namespace Dagny_Taggart_Job
 			{
 				return _trainCarLarge;
 			}
+			private set
+			{
+				_trainCarLarge = value;
+			}
 		}
 
 		public Passenger[] TrainCarSmall
@@ -69,25 +178,30 @@ namespace Dagny_Taggart_Job
 			{
 				return _trainCarSmall;
 			}
-			set
+			private set
 			{
-				_trainCarSmall = value;
+				_trainCarSmall =  value;
 			}
 		}
 
-		public void MakeTrain(List<Passenger> passengers)
+		public void Make(List<Passenger> passengers)
 		{
 			int numberOfSmallTrainCars = 0;
 			int numberOfLargeTrainCars = 0;
 			int actualPassengerNumber = 0;
 
-			if(passengers.Count < 9)
+			if(passengers.Count <= 8)
 			{
 				numberOfLargeTrainCars = 0;
 			}
 			else
 			{
 				numberOfLargeTrainCars = passengers.Count/TrainCarLarge.Length;
+
+				if (passengers.Count%TrainCarLarge.Length>8)
+				{
+					numberOfLargeTrainCars++;
+				}
 			}
 			
 			for(int i = 0; i < numberOfLargeTrainCars; i++)
@@ -95,28 +209,28 @@ namespace Dagny_Taggart_Job
 				for(int j = 0; j < _trainCarLarge.Length; j++)
 				{
 					_trainCarLarge[i] = passengers[i];
+					if (actualPassengerNumber==passengers.Count)
+					{
+						break;
+					}
 					actualPassengerNumber++;
 				}
 
 				_train.Add(_trainCarLarge);
 			}
 
-			if (passengers.Count%TrainCarLarge.Length>8) //зачем два маленьких вагона, выгоднее ли это чем один большой?
+			if(passengers.Count%TrainCarLarge.Length == 0)
 			{
-				numberOfSmallTrainCars = 2;
+				numberOfSmallTrainCars = 0;
 			}
 			else
 			{
-				if(passengers.Count%TrainCarLarge.Length == 0)
-				{
-					numberOfSmallTrainCars = 0;
-				}
-				else
+				if(passengers.Count%TrainCarLarge.Length<=8)
 				{
 					numberOfSmallTrainCars = 1;
 				}
 			}
-
+			
 			int passengersInLastCarTrain = passengers.Count - numberOfLargeTrainCars*TrainCarLarge.Length;
 
 			for (int i = 0; i < numberOfSmallTrainCars; i++)
@@ -131,25 +245,18 @@ namespace Dagny_Taggart_Job
 				_train.Add(_trainCarSmall);
 			}
 
-			Console.WriteLine("Пассажиры в поезде:");
-			Console.WriteLine(actualPassengerNumber); 
-			Console.WriteLine($"поездов в составе {_train.Count}");
+			ShowInfo();
 		}
 
-		public void Show()
+		public void ShowInfo()
 		{
-			foreach(var carTrain in _train)
-			{
-				Console.WriteLine(carTrain);
-			}
-
-			Console.WriteLine(_train.Count);
+			Console.WriteLine($"поездов в составе {_train.Count}");
 		}
 	}
 
 	class FormationPlan
 	{
-		public void Create()
+		public string Create()
 		{
 			string[] cities = { "Лондон", "Штормград", "Винтерфел", "Афины", "Нальчик", "Томск", "Рэйвенхольм" };
 			string destinationPoints = " ";
@@ -180,18 +287,20 @@ namespace Dagny_Taggart_Job
 
 			destinationPoints = destinationPoints.Insert(destinationPoints.Length, destinationCity);
 			Console.WriteLine(destinationPoints);
+
+			return destinationPoints;
 		}
 	}
 	class Traffic
 	{
-		public List<Passenger> PassengerFlow()
+		public List<Passenger> PassengerFlow(string destitationPoints)
 		{
 			Random random = new Random();
 
 			List<Passenger> passengers = new List<Passenger>();
 
-			Passenger passenger = new Passenger(); 
-			int passengersAmount = random.Next(9, 10);
+			Passenger passenger = new Passenger(destitationPoints); 
+			int passengersAmount = random.Next(0, 250);
 
 			for(int i = 0; i < passengersAmount; i++)
 			{
